@@ -66,11 +66,11 @@ class Config
         $attribute = self::_renderAttribute($attribute);
         is_null($theme) && $theme = 'null';
 
+        $js = '';
         $func='echarts';
         if (strstr(self::$dist,"@")) {
             $func=ltrim(self::$dist,"@");
         } else {
-            $js = '';
             if (static::$renderScript) {
                 $src = self::$dist . '/echarts' . (self::$distType ? '.' . self::$distType : '') . (self::$minify ? '.min' : '') . '.js';
 
