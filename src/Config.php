@@ -20,6 +20,19 @@ class Config
     public static $jsVar = '';
     public static $scripts = [];
     public static $prefix = 'chart_';
+    public static $defer = true;
+    public static $push = true;
+    public static $push_start="@push('scripts');";
+    public static $push_end="@endpush";
+    public static $defer_start='document.addEventListener("DOMContentLoaded", function(event) {';
+    public static $defer_end='}';
+    /**
+     * @param string $dist
+     */
+    public static function setDist(string $dist): void
+    {
+        self::$dist = $dist;
+    }
 
     public static function jsExpr($string)
     {
@@ -68,6 +81,18 @@ class Config
 
         $js = '';
         $func='echarts';
+        if (self::$push) {
+            $push_start=self::$push_start;
+            $push_end=self::$push_end;
+        } else {
+            $push_start=$push_end='';
+        }
+        if (self::$defer) {
+            $defer_end = self::$defer_end;
+            $defer_start = self::$defer_start;
+        } else {
+            $defer_end = $defer_start = '';
+        }
         if (strstr(self::$dist,"@")) {
             $func=ltrim(self::$dist,"@");
         } else {
@@ -123,11 +148,15 @@ HTML;
             $option = self::jsonEncode($option);
             return <<<HTML
 <div id="$id" $attribute></div>
+$push_start
 $js
 <script type="text/javascript">
+    $defer_start
     var $prefix$jsVar = $func.init(document.getElementById('$id'), '$theme');
     $prefix$jsVar.setOption($option);$eventsHtml
+    $defer_end
 </script>
+$push_end
 HTML;
         }
     }
