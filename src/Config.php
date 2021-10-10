@@ -66,16 +66,21 @@ class Config
         $attribute = self::_renderAttribute($attribute);
         is_null($theme) && $theme = 'null';
 
-        $js = '';
-        if(static::$renderScript){
-            $src = self::$dist . '/echarts' . (self::$distType ? '.' . self::$distType : '') . (self::$minify ? '.min' : '') . '.js';
+        $func='echarts';
+        if (strstr(self::$dist,"@")) {
+            $func=ltrim(self::$dist,"@");
+        } else {
+            $js = '';
+            if (static::$renderScript) {
+                $src = self::$dist . '/echarts' . (self::$distType ? '.' . self::$distType : '') . (self::$minify ? '.min' : '') . '.js';
 
-            self::_renderScript($src, $js);
+                self::_renderScript($src, $js);
 
-            if(static::$extraScript){
-                foreach(static::$extraScript as $k => $v){
-                    $src = $v . '/' . $k;
-                    self::_renderScript($src, $js);
+                if (static::$extraScript) {
+                    foreach (static::$extraScript as $k => $v) {
+                        $src = $v . '/' . $k;
+                        self::_renderScript($src, $js);
+                    }
                 }
             }
         }
@@ -120,7 +125,7 @@ HTML;
 <div id="$id" $attribute></div>
 $js
 <script type="text/javascript">
-    var $prefix$jsVar = echarts.init(document.getElementById('$id'), '$theme');
+    var $prefix$jsVar = $func.init(document.getElementById('$id'), '$theme');
     $prefix$jsVar.setOption($option);$eventsHtml
 </script>
 HTML;
