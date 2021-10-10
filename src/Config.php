@@ -21,7 +21,8 @@ class Config
     public static $scripts = [];
     public static $prefix = 'chart_';
     public static $defer = true;
-    public static $push = true;
+    public static $push = false;
+    public static $div_defaults='wire:ignore';
     public static $push_start="@push('scripts');";
     public static $push_end="@endpush";
     public static $defer_start='document.addEventListener("DOMContentLoaded", function(event) {';
@@ -112,42 +113,18 @@ class Config
 
         $jsVar = static::$jsVar;
 
-        if(version_compare(self::$version, '3.0.0') < 0){
-            $dist = self::$dist;
-            $require = self::_require($option);
-            $option = self::jsonEncode($option);
-            return <<<HTML
-<div id="$id" $attribute></div>
-$js
-<script type="text/javascript">
-	require.config({
-		paths: {
-			echarts: '{$dist}'
-		}
-	});
-	require(
-		[
-			$require
-		],
-		function (ec) {
-			var myChart = ec.init(document.getElementById('$id'), '$theme');
-			var option = $option;
-			myChart.setOption(option);
-		}
-	);
-</script>
-HTML;
-        }else{
-            $eventsHtml = '';
-            $prefix = self::$prefix;
-            if($events){
-                foreach($events as $event => $call){
-                    $eventsHtml .= $prefix . $jsVar . '.on(\'' . $event . '\', function (params) {' . $call . '});';
-                }
+
+        $eventsHtml = '';
+        $prefix = self::$prefix;
+        if($events){
+            foreach($events as $event => $call){
+                $eventsHtml .= $prefix . $jsVar . '.on(\'' . $event . '\', function (params) {' . $call . '});';
             }
-            $option = self::jsonEncode($option);
-            return <<<HTML
-<div id="$id" $attribute></div>
+        }
+        $option = self::jsonEncode($option);
+        $div_defaults=self::$div_defaults;
+        return <<<HTML
+<div id="$id" wire:ignore $attribute $div_defaults></div>
 $push_start
 $js
 <script type="text/javascript">
@@ -158,7 +135,7 @@ $js
 </script>
 $push_end
 HTML;
-        }
+
     }
 
     private static function _renderScript($src, &$js)
@@ -193,7 +170,10 @@ HTML;
         if(!isset($attribute['style']))
             $attribute['style'] = 'height:400px';
         foreach ($attribute as $k => $v) {
-            $attributeString .= " $k=\"" . self::_h($v) . '"';
+            if ($k=="")
+                $attributeString .= " ".$v;
+            else
+                $attributeString .= " $k=\"" . self::_h($v) . '"';
         }
 
         return $attributeString;
