@@ -25,7 +25,7 @@ class Config
     public static $div_defaults='wire:ignore';
     public static $push_start="@push('scripts');";
     public static $push_end="@endpush";
-    public static $defer_start='document.addEventListener("DOMContentLoaded", function(event) {';
+    public static $defer_start="window.addEventListener('livewire:load', function () {";
     public static $defer_end='});';
     /**
      * @param string $dist
